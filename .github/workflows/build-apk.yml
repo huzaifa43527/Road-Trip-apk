@@ -28,9 +28,10 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Accept Android SDK licenses
+      - name: Configure Android SDK and licenses
         run: |
-          yes | sdkmanager --licenses || true
+          echo "ANDROID_HOME: $ANDROID_HOME"
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: Create temporary debug keystore
         run: |
@@ -51,13 +52,11 @@ jobs:
           APK_PATH="app/build/outputs/apk/debug/app-debug.apk"
           if [ ! -f "$APK_PATH" ] || [ ! -s "$APK_PATH" ]; then
             echo "ERROR: Exact APK file $APK_PATH not found or empty."
-            echo "Scanning app/build/outputs/apk for any APKs:"
-            if [ -d "app/build/outputs/apk" ]; then
-              find app/build/outputs/apk -type f -name "*.apk"
-            fi
+            echo "Scanning directory for any generated APKs:"
+            find . -type f -name "*.apk"
             exit 1
           fi
-          echo "Verified APK at: $APK_PATH"
+          echo "SUCCESS: Verified APK at $APK_PATH"
 
       - name: Upload debug APK artifact
         uses: actions/upload-artifact@v4
@@ -75,7 +74,7 @@ jobs:
             ### SmartTrip Android Debug APK
             - **Package**: `com.smarttrip.app`
             - **Target**: Android 7.0+ (API 24+)
-            - **Direct Download**: Download `app-debug.apk` below and open on your Android phone.
+            - **Direct Download**: Download `app-debug.apk` below and install on Android.
           draft: false
           prerelease: false
           files: app/build/outputs/apk/debug/app-debug.apk
